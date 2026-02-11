@@ -1,0 +1,15 @@
+{
+    "name": "ai-tictactoe-api",
+    "version": "1.0.0",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+      "dev": "node server.js",
+      "start": "node server.js",
+      "test": "node --test"
+    },
+    "dependencies": {
+      "express": "^4.19.2"
+    }
+  }
+  
