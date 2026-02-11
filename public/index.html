@@ -210,6 +210,45 @@
       justify-content: center;
       margin: 12px 0 4px;
     }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .score-panel {
+      background: var(--cell-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 8px 20px var(--shadow);
+    }
+    .score-panel h3 {
+      margin: 0;
+      font-size: 18px;
+      color: var(--text);
+      text-align: left;
+    }
+    .scores {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .score-panel {
+        order: 2;
+      }
+    }
   </style>
 </head>
 <body>
@@ -223,46 +262,53 @@
       </div>
     </div>
 
-    <form id="game-form" class="controls">
-      <label>
-        Player ID
-        <input id="player-id" name="playerId" value="guest" required />
-      </label>
-      <label>
-        You play as
-        <select id="human" name="human">
-          <option value="X">X (first)</option>
-          <option value="O">O (second)</option>
-        </select>
-      </label>
-      <label>
-        Difficulty
-        <select id="difficulty" name="difficulty">
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard" selected>Hard</option>
-        </select>
-      </label>
-    </form>
+    <div class="layout">
+      <div class="left-panel">
+        <form id="game-form" class="controls">
+          <label>
+            Player ID
+            <input id="player-id" name="playerId" value="guest" required />
+          </label>
+          <label>
+            You play as
+            <select id="human" name="human">
+              <option value="X">X (first)</option>
+              <option value="O">O (second)</option>
+            </select>
+          </label>
+          <label>
+            Difficulty
+            <select id="difficulty" name="difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard" selected>Hard</option>
+            </select>
+          </label>
+        </form>
 
-    <div class="status" id="status">Loading...</div>
-    <div class="board" id="board"></div>
+        <div class="status" id="status">Loading...</div>
+        <div class="board" id="board"></div>
 
-    <div class="board-actions">
-      <button id="new-game" type="button">New Game</button>
-      <button type="button" class="secondary" id="reset-scores">Reset Scores</button>
-    </div>
-
-    <div class="scores">
-      <div class="score-box">
-        <div><strong>Player:</strong> <span id="score-player">guest</span></div>
-        <div>Games: <span id="score-games">0</span></div>
+        <div class="board-actions">
+          <button id="new-game" type="button">New Game</button>
+          <button type="button" class="secondary" id="reset-scores">Reset Scores</button>
+        </div>
       </div>
-      <div class="score-box">
-        Wins: <span id="score-wins">0</span> |
-        Losses: <span id="score-losses">0</span> |
-        Draws: <span id="score-draws">0</span>
-      </div>
+
+      <aside class="score-panel" aria-label="Scoreboard">
+        <h3>Scoreboard</h3>
+        <div class="scores">
+          <div class="score-box">
+            <div><strong>Player:</strong> <span id="score-player">guest</span></div>
+            <div>Games: <span id="score-games">0</span></div>
+          </div>
+          <div class="score-box">
+            Wins: <span id="score-wins">0</span> |
+            Losses: <span id="score-losses">0</span> |
+            Draws: <span id="score-draws">0</span>
+          </div>
+        </div>
+      </aside>
     </div>
   </div>
 

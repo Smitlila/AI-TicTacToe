@@ -15,6 +15,11 @@ npm start
 - `npm start` — run the API and web UI
 - `npm test` — run logic tests (engine, AI, scores)
 
+## UI
+
+- Day/night toggle (sun/moon button)
+- Scoreboard sits on the right; controls and board on the left
+
 ## API overview
 
 - `GET /health` — simple uptime check
