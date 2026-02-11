@@ -212,16 +212,37 @@
     }
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+      grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
       gap: 16px;
       align-items: start;
     }
     .left-panel {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 16px;
     }
-    .score-panel {
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+    .right-panel .status {
+      width: 100%;
+    }
+    .panel {
+      background: var(--cell-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 8px 20px var(--shadow);
+    }
+    .form-panel,
+    .score-panel,
+    .board-panel {
       background: var(--cell-bg);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -245,14 +266,35 @@
       .layout {
         grid-template-columns: 1fr;
       }
-      .score-panel {
+      .right-panel {
         order: 2;
       }
+    }
+    #confetti-root {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: 10;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 16px;
+      background: #ff8b00;
+      opacity: 0.9;
+      border-radius: 2px;
+      animation: fall 1800ms ease-out forwards;
+    }
+    @keyframes fall {
+      0% { transform: translate3d(0, -10vh, 0) rotate(0deg) scale(1); opacity: 1; }
+      100% { transform: translate3d(var(--dx), 110vh, 0) rotate(720deg) scale(0.9); opacity: 0; }
     }
   </style>
 </head>
 <body>
   <button id="theme-toggle" type="button" class="secondary theme-toggle" aria-label="Toggle theme">🌙 Night</button>
+  <div id="confetti-root"></div>
 
   <div class="container">
     <div class="top-bar">
@@ -264,51 +306,56 @@
 
     <div class="layout">
       <div class="left-panel">
-        <form id="game-form" class="controls">
-          <label>
-            Player ID
-            <input id="player-id" name="playerId" value="guest" required />
-          </label>
-          <label>
-            You play as
-            <select id="human" name="human">
-              <option value="X">X (first)</option>
-              <option value="O">O (second)</option>
-            </select>
-          </label>
-          <label>
-            Difficulty
-            <select id="difficulty" name="difficulty">
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard" selected>Hard</option>
-            </select>
-          </label>
-        </form>
-
-        <div class="status" id="status">Loading...</div>
-        <div class="board" id="board"></div>
-
-        <div class="board-actions">
-          <button id="new-game" type="button">New Game</button>
-          <button type="button" class="secondary" id="reset-scores">Reset Scores</button>
+        <div class="panel form-panel">
+          <form id="game-form" class="controls">
+            <label>
+              Player ID
+              <input id="player-id" name="playerId" value="guest" required />
+            </label>
+            <label>
+              You play as
+              <select id="human" name="human">
+                <option value="X">X (first)</option>
+                <option value="O">O (second)</option>
+              </select>
+            </label>
+            <label>
+              Difficulty
+              <select id="difficulty" name="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard" selected>Hard</option>
+              </select>
+            </label>
+          </form>
         </div>
+
+        <aside class="panel score-panel" aria-label="Scoreboard">
+          <h3>Scoreboard</h3>
+          <div class="scores">
+            <div class="score-box">
+              <div><strong>Player:</strong> <span id="score-player">guest</span></div>
+              <div>Games: <span id="score-games">0</span></div>
+            </div>
+            <div class="score-box">
+              Wins: <span id="score-wins">0</span> |
+              Losses: <span id="score-losses">0</span> |
+              Draws: <span id="score-draws">0</span>
+            </div>
+          </div>
+        </aside>
       </div>
 
-      <aside class="score-panel" aria-label="Scoreboard">
-        <h3>Scoreboard</h3>
-        <div class="scores">
-          <div class="score-box">
-            <div><strong>Player:</strong> <span id="score-player">guest</span></div>
-            <div>Games: <span id="score-games">0</span></div>
-          </div>
-          <div class="score-box">
-            Wins: <span id="score-wins">0</span> |
-            Losses: <span id="score-losses">0</span> |
-            Draws: <span id="score-draws">0</span>
+      <div class="right-panel">
+        <div class="panel board-panel">
+          <div class="status" id="status">Loading...</div>
+          <div class="board" id="board"></div>
+          <div class="board-actions">
+            <button id="new-game" type="button">New Game</button>
+            <button type="button" class="secondary" id="reset-scores">Reset Scores</button>
           </div>
         </div>
-      </aside>
+      </div>
     </div>
   </div>
 
@@ -322,6 +369,7 @@
     const humanSelect = document.getElementById("human");
     const difficultySelect = document.getElementById("difficulty");
     const resetBtn = document.getElementById("reset-scores");
+    const confettiRoot = document.getElementById("confetti-root");
 
     const scorePlayer = document.getElementById("score-player");
     const scoreGames = document.getElementById("score-games");
@@ -339,6 +387,28 @@
       difficulty: "hard",
       playerId: "guest"
     };
+
+    function clearConfetti() {
+      if (!confettiRoot) return;
+      confettiRoot.innerHTML = "";
+    }
+
+    function launchConfetti() {
+      if (!confettiRoot) return;
+      clearConfetti();
+      const colors = ["#F472B6", "#60A5FA", "#34D399", "#FCD34D", "#C084FC", "#F59E0B"];
+      const count = 120;
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement("div");
+        el.className = "confetti-piece";
+        el.style.left = Math.random() * 100 + "vw";
+        el.style.backgroundColor = colors[i % colors.length];
+        el.style.animationDuration = 1500 + Math.random() * 700 + "ms";
+        el.style.setProperty("--dx", (Math.random() * 200 - 100) + "px");
+        confettiRoot.appendChild(el);
+      }
+      setTimeout(clearConfetti, 2300);
+    }
 
     function setTheme(theme) {
       document.body.classList.toggle("theme-dark", theme === "dark");
@@ -421,6 +491,7 @@
           })
         });
         state = { ...state, ...data };
+        clearConfetti();
         updateStatus("New game started.");
         renderBoard();
         await loadScores();
@@ -444,6 +515,11 @@
           })
         });
         state = { ...state, ...data };
+        if (state.terminal && state.winner === state.human) {
+          launchConfetti();
+        } else if (state.terminal) {
+          clearConfetti();
+        }
         updateStatus();
         renderBoard();
         if (state.terminal) await loadScores();
